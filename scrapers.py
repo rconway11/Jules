@@ -1,6 +1,5 @@
 import asyncio
 from playwright.async_api import async_playwright
-from bs4 import BeautifulSoup
 import logging
 import re
 
@@ -54,7 +53,7 @@ class PhenomScraper(BaseScraper):
                     "company": company
                 })
         except Exception as e:
-            logger.error(f"Error scraping {company}: {e}")
+            logger.info(f"No jobs found or timeout for {company} at {url}")
         finally:
             await context.close()
         return jobs
@@ -85,14 +84,14 @@ class WorkdayScraper(BaseScraper):
                     "company": company
                 })
         except Exception as e:
-            logger.error(f"Error scraping {company}: {e}")
+            logger.info(f"No jobs found or error for {company} at {url}")
         finally:
             await context.close()
         return jobs
 
 class UCSFScraper(BaseScraper):
     async def scrape(self, browser, url, company):
-        page, context = await self.get_page(browser, url + "?keywords=EMT")
+        page, context = await self.get_page(browser, url)
         if not page: return []
 
         jobs = []
@@ -114,14 +113,14 @@ class UCSFScraper(BaseScraper):
                     "company": company
                 })
         except Exception as e:
-            logger.error(f"Error scraping {company}: {e}")
+            logger.info(f"No jobs found or error for {company} at {url}")
         finally:
             await context.close()
         return jobs
 
 class KaiserScraper(BaseScraper):
     async def scrape(self, browser, url, company):
-        page, context = await self.get_page(browser, url + "?keywords=EMT")
+        page, context = await self.get_page(browser, url)
         if not page: return []
 
         jobs = []
@@ -145,13 +144,12 @@ class KaiserScraper(BaseScraper):
                     "company": company
                 })
         except Exception as e:
-            logger.error(f"Error scraping {company}: {e}")
+            logger.info(f"No jobs found or error for {company} at {url}")
         finally:
             await context.close()
         return jobs
 
 class UniversalScraper(BaseScraper):
-    """A more resilient scraper that tries common patterns for blocked or complex sites."""
     async def scrape(self, browser, url, company):
         page, context = await self.get_page(browser, url)
         if not page: return []
@@ -160,7 +158,6 @@ class UniversalScraper(BaseScraper):
         try:
             await page.wait_for_timeout(7000)
 
-            # Common patterns for job lists
             selectors = [
                 ".job-item", ".list-group-item", "li.job", ".job-listing",
                 "tr.job", ".jobs-list-item", ".direct_joblisting"
@@ -172,7 +169,6 @@ class UniversalScraper(BaseScraper):
                 if items: break
 
             if not items:
-                # Fallback: look for any links that look like job titles
                 links = await page.query_selector_all("a")
                 for link in links:
                     text = await link.inner_text()
@@ -204,7 +200,7 @@ class UniversalScraper(BaseScraper):
                     "company": company
                 })
         except Exception as e:
-            logger.error(f"Error scraping {company}: {e}")
+            logger.info(f"No jobs found or error for {company} at {url}")
         finally:
             await context.close()
         return jobs

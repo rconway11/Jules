@@ -29,16 +29,30 @@ async def run_finder():
 
         all_jobs = []
 
+        # Primary search terms to ensure wide coverage
+        search_terms = ["EMT", "ER Tech", "Emergency Room Technician", "Emergency Department"]
+
         for company, url in HOSPITALS.items():
-            logger.info(f"Scraping {company}...")
             scraper = scrapers.get(company)
-            if scraper:
+            if not scraper: continue
+
+            for term in search_terms:
+                logger.info(f"Scraping {company} for '{term}'...")
+                # Adjust URL for search term if needed
+                search_url = url
+                if "SearchJobs" in url: # UCSF
+                    search_url = f"{url}?keywords={term}"
+                elif "search-results" in url or "search-jobs" in url: # Phenom/Taleo
+                    search_url = f"{url}?keywords={term}"
+                elif "wd5" in url: # Workday
+                    search_url = f"{url}?q={term}"
+
                 try:
-                    jobs = await scraper.scrape(browser, url, company)
-                    logger.info(f"Found {len(jobs)} total jobs for {company}")
+                    jobs = await scraper.scrape(browser, search_url, company)
+                    logger.info(f"Found {len(jobs)} total jobs for {company} with '{term}'")
                     all_jobs.extend(jobs)
                 except Exception as e:
-                    logger.error(f"Scraper failed for {company}: {e}")
+                    logger.error(f"Scraper failed for {company} with '{term}': {e}")
 
         await browser.close()
 

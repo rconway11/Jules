@@ -6,14 +6,14 @@ This program automatically searches for entry-level EMT and ER Tech roles in the
 
 - **Automated Scraping**: Targets UCSF, Sutter Health, Stanford Health Care, Kaiser Permanente, Dignity Health, El Camino Health, John Muir Health, AMR, and Royal Ambulance.
 - **Geographic Filtering**: Focuses on roles within 35 miles of Belmont, CA, with special inclusion of John Muir roles in Concord and Walnut Creek.
-- **Keyword Matching**: Searches for "EMT", "ER Tech", "Emergency Room Technician", and related terms.
+- **Keyword Matching**: Uses a combination of exact keyword matching and fuzzy matching to catch variations of EMT and ER Tech roles.
 - **Email Notifications**: Sends a daily summary of found roles via email.
 
 ## Setup
 
 1. **Install Dependencies**:
    ```bash
-   pip install playwright beautifulsoup4
+   pip install playwright thefuzz python-Levenshtein
    playwright install chromium
    ```
 
@@ -38,6 +38,6 @@ This program automatically searches for entry-level EMT and ER Tech roles in the
 
 - `job_finder.py`: Main execution script.
 - `scrapers.py`: Modular scraping logic for different career portals.
-- `processor.py`: Filtering and deduplication logic.
+- `processor.py`: Filtering, deduplication, and fuzzy matching logic.
 - `notifier.py`: Email notification module.
 - `config.py`: Search configuration (cities, keywords, URLs).
